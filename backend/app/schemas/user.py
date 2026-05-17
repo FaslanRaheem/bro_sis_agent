@@ -13,12 +13,14 @@ class UserBase(BaseModel):
 class UserAdminCreate(UserBase):
     password: str
     manager_id: Optional[UUID] = None
+    department: Optional[str] = None
 
 class UserOut(UserBase):
     id: UUID
     manager_id: Optional[UUID] = None
     annual_leave_balance: int
     sick_leave_balance: int
+    is_active: bool
     model_config = ConfigDict(from_attributes=True)
 
     model_config = ConfigDict(from_attributes=True)
