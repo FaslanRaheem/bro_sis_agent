@@ -1,4 +1,5 @@
 from datetime import datetime, timezone, timedelta, date
+import zoneinfo
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 from uuid import UUID
@@ -8,8 +9,11 @@ from app.models.user import User
 from app.schemas.leave import LeaveCreate
 from fastapi import HTTPException
 
+def _get_today() -> date:
+    return datetime.now(zoneinfo.ZoneInfo("Asia/Colombo")).date()
+
 # Processes new leave applications and validates against notice and balance rules
-def apply_leave(db: Session, user_id: UUID, leave_in: LeaveCreate):
+def apply_leave(db: Session, user_id: UUID, leave_in: LeaveCreate, commit: bool = True):
     user = db.get(User, user_id)
 
     if not user:
@@ -17,38 +21,64 @@ def apply_leave(db: Session, user_id: UUID, leave_in: LeaveCreate):
 
     duration = (leave_in.end_date - leave_in.start_date).days + 1
 
-    # Rule: All NON-sick leaves require 14 days advance notice
-    if leave_in.leave_type.lower() != "sick":
-        notice_deadline = date.today() + timedelta(days=14)
-        if duration > 3:
-            raise HTTPException(
-                status_code=400,
-                detail="Requests less than 3 days"
-            )
+    leave_type_lower = leave_in.leave_type.lower()
+
+    # Rule: All Annual leaves require 14 days advance notice
+    if leave_type_lower == "annual":
+        notice_deadline = _get_today() + timedelta(days=14)
         if leave_in.start_date < notice_deadline:
             raise HTTPException(
                 status_code=400,
-                detail="All non-sick leave requests require 14 days advance notice."
+                detail="14 days advance notice required for all Annual leaves."
             )
 
+    # Rule: Maternity/Paternity require 12 months of continuous service
+    if leave_type_lower in ["maternity", "paternity", "maternity/paternity"]:
+        if user.created_at:
+            tenure_days = (_get_today() - user.created_at.date()).days
+            if tenure_days < 365:
+                raise HTTPException(
+                    status_code=400,
+                    detail="12 months of continuous service required for Maternity/Paternity leave."
+                )
+
     # Balance Check and Deduction
-    if leave_in.leave_type == "annual":
+    if leave_type_lower == "annual":
         if user.annual_leave_balance < duration:
             raise HTTPException(
                 status_code=400,
                 detail=f"Insufficient Annual Leave. Balance: {user.annual_leave_balance}"
             )
-
-        user.annual_leave_balance -= duration
-
-    elif leave_in.leave_type == "sick":
+    elif leave_type_lower == "sick":
         if user.sick_leave_balance < duration:
             raise HTTPException(
                 status_code=400,
                 detail=f"Insufficient Sick Leave. Balance: {user.sick_leave_balance}"
             )
-
-        user.sick_leave_balance -= duration
+    elif leave_type_lower == "maternity":
+        if user.maternity_leave_balance < duration:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient Maternity Leave. Balance: {user.maternity_leave_balance}"
+            )
+    elif leave_type_lower == "paternity":
+        if user.paternity_leave_balance < duration:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient Paternity Leave. Balance: {user.paternity_leave_balance}"
+            )
+    elif leave_type_lower == "bereavement":
+        if user.bereavement_leave_balance < duration:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient Bereavement Leave. Balance: {user.bereavement_leave_balance}"
+            )
+    elif leave_type_lower == "unpaid family":
+        if user.unpaid_leave_balance < duration:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient Unpaid Family Leave. Balance: {user.unpaid_leave_balance}"
+            )
 
     leave = Leave(
         **leave_in.model_dump(),
@@ -57,8 +87,11 @@ def apply_leave(db: Session, user_id: UUID, leave_in: LeaveCreate):
     )
 
     db.add(leave)
-    db.commit()
-    db.refresh(leave)
+    if commit:
+        db.commit()
+        db.refresh(leave)
+    else:
+        db.flush()
 
     return leave
 
@@ -127,6 +160,24 @@ def approve_leave(db: Session, leave_id: UUID, approver_id: UUID, approve: bool)
     leave.status = "approved" if approve else "rejected"
     leave.approved_by = approver_id
     leave.approved_at = datetime.now(timezone.utc)
+
+    if approve:
+        duration = (leave.end_date - leave.start_date).days + 1
+        employee = db.get(User, leave.user_id)
+        if employee:
+            leave_type_lower = leave.leave_type.lower()
+            if leave_type_lower == "annual" and employee.annual_leave_balance >= duration:
+                employee.annual_leave_balance -= duration
+            elif leave_type_lower == "sick" and employee.sick_leave_balance >= duration:
+                employee.sick_leave_balance -= duration
+            elif leave_type_lower == "maternity" and employee.maternity_leave_balance >= duration:
+                employee.maternity_leave_balance -= duration
+            elif leave_type_lower == "paternity" and employee.paternity_leave_balance >= duration:
+                employee.paternity_leave_balance -= duration
+            elif leave_type_lower == "bereavement" and employee.bereavement_leave_balance >= duration:
+                employee.bereavement_leave_balance -= duration
+            elif leave_type_lower == "unpaid family" and employee.unpaid_leave_balance >= duration:
+                employee.unpaid_leave_balance -= duration
 
     db.commit()
     db.refresh(leave)

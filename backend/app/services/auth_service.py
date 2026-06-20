@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from app.models.user import User
 from datetime import datetime, timedelta, timezone, tzinfo
-from app.core.security import hash_password, verify_password, create_access_token, validate_password_complexity
+from app.core.security import hash_password, verify_password, create_access_token,validate_password_complexity
 from app.models.user import PasswordHistory
 
 MAX_FAILED_ATTEMPTS = 5
@@ -30,7 +30,6 @@ def create_user(db: Session, email: str, password: str, full_name: str | None = 
     db.add(history)
     db.commit()
     return user
-
 
 # login page authentication
 def authenticate_user(db: Session, email: str, password: str):
@@ -85,7 +84,6 @@ def authenticate_user(db: Session, email: str, password: str):
             needs_reset = True
     return user, None, needs_reset
 
-
 # change the password
 def change_password(db: Session, user: User, old_password: str, new_password: str):
     """Handles password rotation, verifying the old password, and preventing reuse."""
@@ -111,12 +109,10 @@ def change_password(db: Session, user: User, old_password: str, new_password: st
 
     return True, "Password updated successfully."
 
-
 # create the user token
 def create_user_token(user):
     data = {"sub": str(user.id), "role": user.role}
     return create_access_token(data)
-
 
 # unlock the user (admin only)
 def unlock_user_account(db: Session, target_user_id: UUID):
@@ -134,8 +130,6 @@ def unlock_user_account(db: Session, target_user_id: UUID):
 
     db.commit()
     return True, f"Account for {user.email} has been successfully unlocked."
-
-
 def admin_reset_password(db: Session, target_user_id: UUID, new_password: str):
     """Allows an admin to force reset a user's password, unlocking them in the process."""
     stmt = select(User).where(User.id == target_user_id)
@@ -149,7 +143,7 @@ def admin_reset_password(db: Session, target_user_id: UUID, new_password: str):
 
     user.password_hash = new_hashed
     user.password_changed_at = datetime.now(timezone.utc)
-
+    
     # Reset security locks since the admin verified the reset
     user.failed_login_attempts = 0
     user.account_locked_until = None

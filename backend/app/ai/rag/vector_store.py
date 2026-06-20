@@ -1,4 +1,4 @@
-import os
+import threading
 from pinecone import Pinecone, ServerlessSpec
 from langchain_pinecone import PineconeVectorStore
 from app.ai.rag.embeddings import embeddings
@@ -6,10 +6,11 @@ from app.core.config import settings
 
 _vector_store = None
 _index = None
+_init_lock = threading.Lock()
 
 def _init_pinecone():
     global _vector_store, _index
-    raw_api_key = settings.pinecone_api_key
+    raw_api_key = settings.PINECONE_API_KEY
     if not raw_api_key:
         raise ValueError("PINECONE_API_KEY is missing from your environment!")
 
@@ -34,11 +35,17 @@ def _init_pinecone():
     return _vector_store, _index
 
 def get_vector_store():
+    global _vector_store
     if _vector_store is None:
-        _init_pinecone()
+        with _init_lock:
+            if _vector_store is None:
+                _init_pinecone()
     return _vector_store
 
 def get_index():
+    global _index
     if _index is None:
-        _init_pinecone()
+        with _init_lock:
+            if _index is None:
+                _init_pinecone()
     return _index
