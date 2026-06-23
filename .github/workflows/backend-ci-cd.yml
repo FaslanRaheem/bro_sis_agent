@@ -46,6 +46,23 @@ jobs:
       DEFAULT_MODEL: "gemini-3-flash-preview"
 
     steps:
+      - name: Validate required secrets
+        run: |
+          missing=()
+          [ -z "${{ secrets.TEST_SECRET_KEY }}" ] && missing+=("TEST_SECRET_KEY")
+          [ -z "${{ secrets.TEST_ENCRYPTION_KEY }}" ] && missing+=("TEST_ENCRYPTION_KEY")
+          [ -z "${{ secrets.GOOGLE_API_KEY }}" ] && missing+=("GOOGLE_API_KEY")
+          [ -z "${{ secrets.PINECONE_API_KEY }}" ] && missing+=("PINECONE_API_KEY")
+          [ -z "${{ secrets.HR_DEPARTMENT_EMAIL }}" ] && missing+=("HR_DEPARTMENT_EMAIL")
+          [ -z "${{ secrets.SYSTEM_EMAIL_ADDRESS }}" ] && missing+=("SYSTEM_EMAIL_ADDRESS")
+          [ -z "${{ secrets.SYSTEM_EMAIL_APP_PASSWORD }}" ] && missing+=("SYSTEM_EMAIL_APP_PASSWORD")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            echo "Please configure these secrets in Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          echo "✅ All required secrets are configured"
+
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Authenticate to Google Cloud

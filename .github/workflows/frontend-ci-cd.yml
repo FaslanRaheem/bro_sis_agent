@@ -106,6 +106,16 @@ jobs:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Enable required GCP APIs
+        run: |
+          gcloud services enable cloudfunctions.googleapis.com --project ${{ vars.GCP_PROJECT_ID }} --quiet
+          gcloud services enable cloudbuild.googleapis.com --project ${{ vars.GCP_PROJECT_ID }} --quiet
+          gcloud services enable artifactregistry.googleapis.com --project ${{ vars.GCP_PROJECT_ID }} --quiet
+          gcloud services enable run.googleapis.com --project ${{ vars.GCP_PROJECT_ID }} --quiet
+
       - name: Deploy to Firebase Hosting (live)
         working-directory: ./frontend
         env:
@@ -157,6 +167,16 @@ jobs:
           project_id: ${{ vars.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Enable required GCP APIs
+        run: |
+          gcloud services enable cloudfunctions.googleapis.com --project ${{ vars.GCP_PROJECT_ID }} --quiet
+          gcloud services enable cloudbuild.googleapis.com --project ${{ vars.GCP_PROJECT_ID }} --quiet
+          gcloud services enable artifactregistry.googleapis.com --project ${{ vars.GCP_PROJECT_ID }} --quiet
+          gcloud services enable run.googleapis.com --project ${{ vars.GCP_PROJECT_ID }} --quiet
 
       - name: Deploy to Firebase Hosting (preview)
         working-directory: ./frontend
