@@ -62,7 +62,10 @@ jobs:
           cache: "pip"
           cache-dependency-path: backend/requirements.txt
 
-      - name: Install dependencies
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libkrb5-dev
+
+      - name: Install python dependencies
         run: pip install -r backend/requirements.txt
 
       - name: Run tests
