@@ -105,14 +105,18 @@ export function Sidebar() {
             alt="BROSIS"
             width={100}
             height={48}
+            style={{ width: "auto", height: "auto" }}
             className="object-contain dark:hidden"
+            priority
           />
           <Image
             src="/brosis_logo_dark.png"
             alt="BROSIS"
             width={100}
             height={48}
+            style={{ width: "auto", height: "auto" }}
             className="object-contain hidden dark:block"
+            priority
           />
         </div>
       </div>

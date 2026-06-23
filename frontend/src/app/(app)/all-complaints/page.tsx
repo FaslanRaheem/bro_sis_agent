@@ -44,7 +44,7 @@ function ResolveDialog({
 
   const handleResolve = () => {
     mutate(
-      { id: complaint.id, body: { resolution_note: note } },
+      { id: complaint.id, note: note },
       { onSuccess: () => onClose() }
     );
   };

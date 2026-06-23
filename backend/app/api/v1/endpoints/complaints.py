@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 from app.core.config import settings
-from app.core.email_utils import TEMPLATES, send_system_notification
+from app.core.email_utils import TEMPLATES, send_notification_background
 from app.db.session import get_db
 from app.api.v1.deps import get_current_user
 from app.schemas.complaint import ComplaintCreate, ComplaintOut, ComplaintUpdate
@@ -36,8 +36,8 @@ def create(data: ComplaintCreate, db: Session = Depends(get_db), current_user: U
         reporter=reporter_name
     )
 
-    # Safe reference via centralized settings configuration object
-    send_system_notification(
+    # Send notification to HR in a background thread (non-blocking)
+    send_notification_background(
         settings.HR_DEPARTMENT_EMAIL,
         f"Grievance Filed [Priority: {data.priority.upper()}]: {data.title}",
         html

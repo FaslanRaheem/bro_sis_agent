@@ -241,186 +241,9 @@ const fadeUpVariant = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { type: "spring", stiffness: 90, damping: 18 },
+    transition: { type: "spring" as const, stiffness: 90, damping: 18 },
   },
 };
-
-// ─── Left decorative card ─────────────────────────────────────
-function LeftCard() {
-  return (
-    <div
-      style={{
-        width: "320px",
-        minHeight: "340px",
-        background: "oklch(0.11 0.02 250 / 80%)",
-        border: "1px solid oklch(1 0 0 / 8%)",
-        borderRadius: "16px",
-        backdropFilter: "blur(12px)",
-        padding: "28px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px",
-      }}
-    >
-      {/* Avatar */}
-      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-        <div
-          style={{
-            width: "36px",
-            height: "36px",
-            borderRadius: "50%",
-            background: "linear-gradient(135deg, oklch(0.45 0.15 220), oklch(0.60 0.20 175))",
-          }}
-        />
-        <div>
-          <div
-            style={{
-              width: "80px",
-              height: "10px",
-              borderRadius: "4px",
-              background: "oklch(0.30 0.03 250)",
-              marginBottom: "6px",
-            }}
-          />
-          <div
-            style={{
-              width: "60px",
-              height: "8px",
-              borderRadius: "4px",
-              background: "oklch(0.22 0.02 250)",
-            }}
-          />
-        </div>
-      </div>
-      <p style={{ fontSize: "13px", color: "oklch(0.95 0 0)", fontWeight: 600, lineHeight: 1.4 }}>
-        Welcome to BROSIS
-      </p>
-      <p style={{ fontSize: "11px", color: "oklch(0.55 0 0)", lineHeight: 1.6 }}>
-        Log in to continue to your workspace.
-      </p>
-      {/* Email field skeleton */}
-      <div>
-        <div style={{ fontSize: "11px", color: "oklch(0.60 0 0)", marginBottom: "6px" }}>Email</div>
-        <div
-          style={{
-            width: "100%",
-            height: "34px",
-            borderRadius: "8px",
-            background: "oklch(0.16 0.02 250)",
-            border: "1px solid oklch(1 0 0 / 8%)",
-          }}
-        />
-      </div>
-      {/* Button skeleton */}
-      <div
-        style={{
-          width: "100%",
-          height: "34px",
-          borderRadius: "8px",
-          background: "oklch(0.22 0.03 250)",
-          border: "1px solid oklch(1 0 0 / 8%)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <span style={{ fontSize: "12px", color: "oklch(0.50 0 0)" }}>Continue</span>
-      </div>
-      <p style={{ fontSize: "10px", color: "oklch(0.38 0 0)", textAlign: "center" }}>
-        Don&apos;t have an account? <span style={{ color: "oklch(0.55 0 0)" }}>Sign up</span>
-      </p>
-    </div>
-  );
-}
-
-// ─── Right decorative card ────────────────────────────────────
-function RightCard() {
-  return (
-    <div
-      style={{
-        width: "320px",
-        minHeight: "340px",
-        background: "oklch(0.11 0.02 250 / 80%)",
-        border: "1px solid oklch(1 0 0 / 8%)",
-        borderRadius: "16px",
-        backdropFilter: "blur(12px)",
-        padding: "28px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px",
-      }}
-    >
-      {/* Icon */}
-      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-        <div
-          style={{
-            width: "36px",
-            height: "36px",
-            borderRadius: "10px",
-            background: "linear-gradient(135deg, oklch(0.60 0.20 175), oklch(0.45 0.18 195))",
-          }}
-        />
-        <div>
-          <div
-            style={{
-              width: "90px",
-              height: "10px",
-              borderRadius: "4px",
-              background: "oklch(0.30 0.03 250)",
-              marginBottom: "6px",
-            }}
-          />
-          <div
-            style={{
-              width: "65px",
-              height: "8px",
-              borderRadius: "4px",
-              background: "oklch(0.22 0.02 250)",
-            }}
-          />
-        </div>
-      </div>
-      <p style={{ fontSize: "13px", color: "oklch(0.95 0 0)", fontWeight: 600, lineHeight: 1.4 }}>
-        Sign in to BROSIS
-      </p>
-      <p style={{ fontSize: "11px", color: "oklch(0.55 0 0)", lineHeight: 1.6 }}>
-        Enter your passcode from your authenticator app.
-      </p>
-      {/* OTP boxes */}
-      <div style={{ display: "flex", gap: "8px" }}>
-        {[...Array(4)].map((_, i) => (
-          <div
-            key={i}
-            style={{
-              flex: 1,
-              height: "40px",
-              borderRadius: "8px",
-              background: "oklch(0.16 0.02 250)",
-              border: "1px solid oklch(1 0 0 / 10%)",
-            }}
-          />
-        ))}
-      </div>
-      <div
-        style={{
-          width: "100%",
-          height: "34px",
-          borderRadius: "8px",
-          background: "oklch(0.22 0.03 250)",
-          border: "1px solid oklch(1 0 0 / 8%)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <span style={{ fontSize: "12px", color: "oklch(0.50 0 0)" }}>Continue</span>
-      </div>
-      <p style={{ fontSize: "10px", color: "oklch(0.38 0 0)", textAlign: "center" }}>
-        Return to sign in
-      </p>
-    </div>
-  );
-}
 
 // ─── Actual login form (center card) ──────────────────────────
 function LoginFormInner() {
@@ -446,9 +269,11 @@ function LoginFormInner() {
         "/auth/login",
         values satisfies LoginRequest
       );
+      // eslint-disable-next-line react-hooks/immutability
       api.defaults.headers.common["Authorization"] = `Bearer ${authData.access_token}`;
       const { data: user } = await api.get<User>("/auth/me");
       storeLogin(authData.access_token, user);
+      // eslint-disable-next-line react-hooks/immutability
       document.cookie = "hr_auth_present=1; path=/; SameSite=Strict";
       if (authData.needs_password_reset) {
         router.push("/force-reset");
@@ -483,6 +308,7 @@ function LoginFormInner() {
           alt="BROSIS"
           width={140}
           height={70}
+          style={{ width: "auto", height: "auto" }}
           className="object-contain"
           priority
         />

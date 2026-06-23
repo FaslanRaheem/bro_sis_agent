@@ -1,0 +1,5 @@
+/backend/.env
+img.png
+.venv/
+__pycache__/
+.idea/

@@ -1,12 +1,21 @@
 import smtplib
 import logging
+import traceback
+from concurrent.futures import ThreadPoolExecutor
 from email.message import EmailMessage
 
 from app.core.config import settings
 
+# Module-level thread pool for non-blocking email dispatch
+_email_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="email_worker")
+
 
 def send_system_notification(recipient: str, subject: str, html_content: str):
-    """Sends a responsive, professional HTML system email via secure SMTP."""
+    """Sends a responsive, professional HTML system email via secure SMTP (blocking)."""
+    if not recipient:
+        logging.warning("send_system_notification called with empty recipient — skipping.")
+        return
+
     msg = EmailMessage()
     msg.set_content("Please use an HTML-capable email client to view this message.")
     msg.add_alternative(html_content, subtype='html')
@@ -15,15 +24,28 @@ def send_system_notification(recipient: str, subject: str, html_content: str):
     msg['From'] = settings.SYSTEM_EMAIL_ADDRESS
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
             server.login(
                 settings.SYSTEM_EMAIL_ADDRESS,
                 settings.SYSTEM_EMAIL_APP_PASSWORD.get_secret_value()
             )
             server.send_message(msg)
-            logging.info(f"System notification delivered successfully to {recipient}")
+            logging.info(f"[Email] Delivered successfully → {recipient} | Subject: {subject}")
+    except smtplib.SMTPAuthenticationError as e:
+        logging.error(f"[Email] SMTP authentication failed — check SYSTEM_EMAIL_APP_PASSWORD: {e}")
     except smtplib.SMTPException as e:
-        logging.error(f"Failed to transmit email notification to {recipient}: {str(e)}")
+        logging.error(f"[Email] SMTP error sending to {recipient}: {e}")
+    except OSError as e:
+        logging.error(f"[Email] Network/OS error sending to {recipient}: {e}")
+    except Exception as e:
+        logging.error(f"[Email] Unexpected error sending to {recipient}: {e}\n{traceback.format_exc()}")
+
+
+def send_notification_background(recipient: str, subject: str, html_content: str) -> None:
+    """Dispatches send_system_notification in a background thread.
+    Use this inside FastAPI route handlers to avoid blocking the response.
+    """
+    _email_executor.submit(send_system_notification, recipient, subject, html_content)
 
 
 TEMPLATES = {

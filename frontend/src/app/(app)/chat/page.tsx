@@ -210,29 +210,6 @@ export default function ChatPage() {
     }
   };
 
-  // Listen for OAuth success from popup and resume the chat
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === "GOOGLE_AUTH_SUCCESS") {
-        void handleSendWithContent("Gmail connected. Please proceed and submit my leave request now.");
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSessionId]);
-
-  // Auto-scroll to bottom on new messages
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, optimisticMessages, isTyping]);
-
-  const handleNewSession = async () => {
-    const session = await createSession.mutateAsync({});
-    setActiveSessionId(session.id);
-    setOptimisticMessages([]);
-  };
-
   // Core send logic — accepts content directly so it can be called
   // both from the textarea and from the Google OAuth resume handler
   const handleSendWithContent = async (content: string) => {
@@ -257,6 +234,7 @@ export default function ChatPage() {
       });
 
       // Detect GOOGLE_AUTH_REQUIRED signal in AI response
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((data as any)?.content?.includes("GOOGLE_AUTH_REQUIRED")) {
         const authMsg: ExtendedChatMessage = {
           id: `auth-${Date.now()}`,
@@ -274,6 +252,29 @@ export default function ChatPage() {
       // Clear optimistic messages (real ones come from the query)
       setOptimisticMessages((prev) => prev.filter(m => m.requiresGoogleAuth));
     }
+  };
+
+  // Listen for OAuth success from popup and resume the chat
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === "GOOGLE_AUTH_SUCCESS") {
+        void handleSendWithContent("Gmail connected. Please proceed and submit my leave request now.");
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSessionId]);
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, optimisticMessages, isTyping]);
+
+  const handleNewSession = async () => {
+    const session = await createSession.mutateAsync({});
+    setActiveSessionId(session.id);
+    setOptimisticMessages([]);
   };
 
   const handleSend = async () => {

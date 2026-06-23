@@ -1,3 +1,9 @@
+import sys
+import asyncio
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -47,59 +53,14 @@ def rate_limit_handler(request: Request, exc: Exception) -> Response:
 
 app.add_exception_handler(RateLimitExceeded, rate_limit_handler)
 
-origins = []
-frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173") or "http://localhost:5173"
-
-
-
-class ContentSizeLimitMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        if request.method in ["POST", "PUT", "PATCH"]:
-            content_length = request.headers.get("content-length")
-            if content_length and int(content_length) > 5 * 1024 * 1024:
-                return JSONResponse(
-                    status_code=413,
-                    content={"detail": "Payload Too Large. Maximum size is 5MB."}
-                )
-        return await call_next(request)
-
-class CSRFMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        if os.getenv("PYTEST_CURRENT_TEST"):
-            return await call_next(request)
-            
-        csrf_cookie = request.cookies.get("csrf_token")
-        
-        if request.method in ["POST", "PUT", "DELETE", "PATCH"]:
-            if request.url.path not in ["/auth/login", "/auth/login-form", "/auth/register"]:
-                csrf_header = request.headers.get("x-csrf-token")
-                if not csrf_cookie or csrf_header != csrf_cookie:
-                    return JSONResponse(status_code=403, content={"detail": "CSRF token missing or incorrect."})
-                
-        response = await call_next(request)
-        
-        if not csrf_cookie:
-            token = secrets.token_hex(32)
-            response.set_cookie(
-                key="csrf_token", 
-                value=token, 
-                httponly=False, 
-                samesite="none", 
-                secure=True
-            )
-            response.headers["X-CSRF-Token"] = token
-        else:
-            response.headers["X-CSRF-Token"] = csrf_cookie
-            
-        return response
-
-if frontend_url:
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://10.1.104.24:3000"
+]
+frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+if frontend_url and frontend_url not in origins:
     origins.append(frontend_url)
-else:
-    print("WARNING: FRONTEND_URL environment variable is not set!")
-
-app.add_middleware(ContentSizeLimitMiddleware)
-app.add_middleware(CSRFMiddleware)
 
 app.add_middleware(
     CORSMiddleware, # type: ignore

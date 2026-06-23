@@ -52,6 +52,7 @@ export default function ForceResetPage() {
       });
       toast.success("Password updated! Please sign in with your new password.");
       // Clear auth and redirect to login
+      // eslint-disable-next-line react-hooks/immutability
       document.cookie =
         "hr_auth_present=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       router.push("/login");

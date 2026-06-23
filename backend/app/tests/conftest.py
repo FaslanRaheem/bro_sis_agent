@@ -42,7 +42,7 @@ import app.db.session  # noqa: E402
 app.db.session.engine = test_engine
 
 # 3. IMPORT YOUR APP
-from app.main import app  # noqa: E402
+from main import app  # noqa: E402
 from app.db.session import get_db  # noqa: E402
 from app.db.session import Base  # noqa: E402
 

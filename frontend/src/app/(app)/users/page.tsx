@@ -14,7 +14,6 @@ import {
   Plus,
   Loader2,
   UserCog,
-  Lock,
   Unlock,
   Trash2,
   UserX,

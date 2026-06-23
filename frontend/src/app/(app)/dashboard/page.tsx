@@ -17,11 +17,9 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/store/authStore";
 import api from "@/lib/axiosClient";
 import type { Leave, Complaint, User } from "@/types/models";
-import type { Metadata } from "next";
 
 // ---- Data fetching ----
 

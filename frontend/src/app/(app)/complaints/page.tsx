@@ -31,7 +31,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import {
   useMyComplaints,
   useFileComplaint,
@@ -79,6 +78,7 @@ export default function ComplaintsPage() {
     defaultValues: { is_anonymous: false as boolean, priority: "Medium" as const },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const isAnonymous = watch("is_anonymous");
 
   const onSubmit = async (values: ComplaintFormValues) => {

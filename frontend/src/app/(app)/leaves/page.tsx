@@ -151,6 +151,7 @@ export default function LeavesPage() {
     formState: { errors, isSubmitting },
   } = useForm<LeaveFormValues>({ resolver: zodResolver(leaveSchema) });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchedLeaveType = watch("leave_type");
   const watchedStartDate = watch("start_date");
 

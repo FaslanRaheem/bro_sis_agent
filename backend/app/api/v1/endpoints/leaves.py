@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from uuid import UUID
+import logging
+import os
 
-from app.core.email_utils import TEMPLATES, send_system_notification
+from app.core.email_utils import TEMPLATES, send_notification_background
 from app.db.session import get_db
 from app.schemas.leave import LeaveCreate, LeaveOut
 from app.services import leave_service
@@ -10,7 +13,6 @@ from app.api.v1.deps import get_current_user
 from app.core.permissions import require_role
 from app.core.constants import ROLE_MANAGER, ROLE_HR, ROLE_ADMIN
 from app.models.user import User
-import os
 
 router = APIRouter(prefix="/leaves", tags=["leaves"])
 
@@ -60,10 +62,15 @@ def action_leave(leave_id: UUID, approve: bool, db: Session = Depends(get_db), c
         note="Actioned dynamically via HR System Management Console Portal"
     )
 
-    send_system_notification(
-        leave.user.email,
-        f"Leave Request Status Update: {status_text}",
-        html
-    )
+    # Fetch the employee record directly to avoid lazy-load / None issues on leave.user
+    employee = db.scalar(select(User).where(User.id == leave.user_id))
+    if employee and employee.email:
+        send_notification_background(
+            employee.email,
+            f"Leave Request Status Update: {status_text}",
+            html
+        )
+    else:
+        logging.warning(f"[Leaves] Could not send email: employee not found for leave {leave_id}")
 
     return leave

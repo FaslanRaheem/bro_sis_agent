@@ -218,8 +218,6 @@ async def _run_agent_loop(
 
 
 
-_graph_cache = {}
-MAX_CACHE_SIZE = 100
 GRAPH_VERSION = "v3"
 
 # Public entry point
@@ -255,26 +253,21 @@ async def run_chat(user_input: str, user, session_id: str) -> str:
         return await _run_agent_loop(state, bound, COMMON_AGENT_PROMPT, tm)
 
     sid = f"{GRAPH_VERSION}:{session_id}"
-    if sid not in _graph_cache:
-        if len(_graph_cache) >= MAX_CACHE_SIZE:
-            _graph_cache.pop(next(iter(_graph_cache)))
-            
-        # Compile a fresh graph for this session
-        builder = StateGraph(State)
-        builder.add_node("router", semantic_router)
-        builder.add_node("leave_agent", _leave_agent)
-        builder.add_node("complaint_agent", _complaint_agent)
-        builder.add_node("hr_agent", _hr_agent)
-        builder.add_node("common_agent", _common_agent)
-        builder.add_edge(START, "router")
-        builder.add_edge("leave_agent", END)
-        builder.add_edge("complaint_agent", END)
-        builder.add_edge("hr_agent", END)
-        builder.add_edge("common_agent", END)
-        
-        _graph_cache[sid] = builder.compile(checkpointer=_get_checkpointer())
-        
-    graph = _graph_cache[sid]
+    
+    # Compile a fresh graph for this request
+    builder = StateGraph(State)
+    builder.add_node("router", semantic_router)
+    builder.add_node("leave_agent", _leave_agent)
+    builder.add_node("complaint_agent", _complaint_agent)
+    builder.add_node("hr_agent", _hr_agent)
+    builder.add_node("common_agent", _common_agent)
+    builder.add_edge(START, "router")
+    builder.add_edge("leave_agent", END)
+    builder.add_edge("complaint_agent", END)
+    builder.add_edge("hr_agent", END)
+    builder.add_edge("common_agent", END)
+    
+    graph = builder.compile(checkpointer=_get_checkpointer())
 
     config = {"configurable": {"thread_id": sid}}
     t_start = time.time()

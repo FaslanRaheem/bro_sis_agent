@@ -46,14 +46,12 @@ def get_current_user(
         )
 
     try:
-        user_id = UUID(payload.get("sub"))  # 🔥 FIX HERE
+        user_id = UUID(payload.get("sub"))
     except Exception:
         raise HTTPException(
             status_code=401,
             detail="Invalid token payload"
         )
-
-    user_id = UUID(payload.get("sub"))
 
     user = db.query(User).filter(User.id == user_id).first()
 

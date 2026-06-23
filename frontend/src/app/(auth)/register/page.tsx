@@ -67,6 +67,7 @@ export default function RegisterPage() {
           alt="BROSIS"
           width={160}
           height={80}
+          style={{ width: "auto", height: "auto" }}
           className="object-contain"
           priority
         />
