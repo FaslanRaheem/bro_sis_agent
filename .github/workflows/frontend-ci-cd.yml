@@ -100,6 +100,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ inputs.backend_url || secrets.NEXT_PUBLIC_API_URL }}
         run: |
+          npx firebase-tools experiments:enable webframeworks
           npx firebase-tools deploy --only hosting --project ${{ vars.GCP_PROJECT_ID }} --non-interactive
 
       - name: Update FRONTEND_URL to Latest
@@ -140,6 +141,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ inputs.backend_url || secrets.NEXT_PUBLIC_API_URL }}
         run: |
+          npx firebase-tools experiments:enable webframeworks
           npx firebase-tools hosting:channel:deploy pr-${{ github.event.number }} \
             --project ${{ vars.GCP_PROJECT_ID }} \
             --expires 7d
