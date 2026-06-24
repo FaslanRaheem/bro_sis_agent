@@ -10,7 +10,25 @@ from cryptography.fernet import Fernet, InvalidToken
 from app.core.config import settings
 
 
-cipher_suite = Fernet(settings.ENCRYPTION_KEY.encode())
+_cipher_suite: "Fernet | None" = None
+
+def _get_cipher() -> "Fernet":
+    global _cipher_suite
+    if _cipher_suite is None:
+        _enc_key = settings.ENCRYPTION_KEY
+        if not _enc_key:
+            raise RuntimeError(
+                "ENCRYPTION_KEY is not set. Generate one with:\n"
+                "  python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\""
+            )
+        try:
+            _cipher_suite = Fernet(_enc_key.encode())
+        except ValueError as exc:
+            raise RuntimeError(
+                f"ENCRYPTION_KEY is invalid: {exc}\n"
+                "It must be a 32-byte url-safe base64 string. Regenerate it as above."
+            ) from exc
+    return _cipher_suite
 
 def hash_password(password: str) -> str:
     # bcrypt requires passwords to be encoded as bytes before hashing
@@ -42,7 +60,7 @@ def encrypt_token(token: str) -> str | None:
     """Encrypts a plaintext token for secure database storage."""
     if not token:
         return None
-    encrypted_bytes = cipher_suite.encrypt(token.encode('utf-8'))
+    encrypted_bytes = _get_cipher().encrypt(token.encode('utf-8'))
     return encrypted_bytes.decode('utf-8')
 
 def decrypt_token(encrypted_token: str) -> str | None:
@@ -50,7 +68,7 @@ def decrypt_token(encrypted_token: str) -> str | None:
     if not encrypted_token:
         return None
     try:
-        decrypted_bytes = cipher_suite.decrypt(encrypted_token.encode('utf-8'))
+        decrypted_bytes = _get_cipher().decrypt(encrypted_token.encode('utf-8'))
         return decrypted_bytes.decode('utf-8')
     except InvalidToken:
         raise ValueError("Decryption failed. The encryption key may have changed.")
