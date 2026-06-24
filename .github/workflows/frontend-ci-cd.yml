@@ -122,6 +122,10 @@ jobs:
             --project ${{ vars.GCP_PROJECT_ID }}
 
 
+      - name: Enable Firebase webframeworks experiment
+        working-directory: ./frontend
+        run: npx --no-install firebase experiments:enable webframeworks
+
       - name: Deploy to Firebase Hosting (live)
         working-directory: ./frontend
         env:
@@ -175,6 +179,10 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+
+      - name: Enable Firebase webframeworks experiment
+        working-directory: ./frontend
+        run: npx --no-install firebase experiments:enable webframeworks
 
       - name: Deploy to Firebase Hosting (preview)
         working-directory: ./frontend

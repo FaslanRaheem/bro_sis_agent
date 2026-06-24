@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     libffi-dev \
     libpq-dev \
+    libkrb5-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
