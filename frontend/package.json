@@ -40,9 +40,18 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "esbuild": "^0.25.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
+    "firebase-tools": "15.22.1",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "uuid": "^11.0.0",
+    "glob": "^11.0.0",
+    "inflight": "^1.0.6",
+    "postcss": ">=8.5.10",
+    "@opentelemetry/core": ">=2.8.0"
   }
 }
