@@ -109,6 +109,18 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Enable required GCP APIs
+        run: |
+          gcloud services enable \
+            cloudfunctions.googleapis.com \
+            cloudbuild.googleapis.com \
+            artifactregistry.googleapis.com \
+            run.googleapis.com \
+            eventarc.googleapis.com \
+            pubsub.googleapis.com \
+            storage.googleapis.com \
+            --project ${{ vars.GCP_PROJECT_ID }}
+
       - name: Deploy to Firebase Hosting (live)
         working-directory: ./frontend
         env:
